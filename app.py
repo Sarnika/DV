@@ -8,8 +8,8 @@ Ecological Footprint Data
 df = pd.read_csv('NFA.csv')
 option = st.sidebar.selectbox( label =  'Visualizations',options = ('World', 'Year and Region'))
 if option == 'Year and Region':
-       min_year = df['year'].min()
-       max_year = df['year'].max()
+       min_year = 1961
+       max_year = 2014
        year = st.sidebar.slider('Year',min_value = min_year, max_value = max_year,step=1)
        record = st.sidebar.selectbox(label='Record',options=df['record'].unique())
        col1, col2= st.columns(2)
