@@ -6,10 +6,11 @@ st.write("""
 Ecological Footprint Data
 """)
 df = pd.read_csv('NFA.csv')
-
 option = st.sidebar.selectbox( label =  'Visualizations',options = ('World', 'Year and Region'))
 if option == 'Year and Region':
-       year = st.sidebar.slider('Year',df['year'].min(), df['year'].max())
+       min_year = df['year'].min()
+       max_year = df['year'].max()
+       year = st.sidebar.slider('Year',min_value = min_year, max_value = max_year,step=1)
        record = st.sidebar.selectbox(label='Record',options=df['record'].unique())
        col1, col2= st.columns(2)
        col1.metric(label="Year", value=year)
