@@ -52,8 +52,8 @@ if option == 'Year and Record':
 elif option == 'World':
        df_world = df[(df['country']=='World')]
        df_non_world = df[df['country'] != 'World']
-       st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapPerCap','EFConsPerCap']]))
-       st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapTotGHA','EFConsTotGHA']]))
+       st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapPerCap','EFConsPerCap']],labels={"value": "Ecological Footprint & Biocapacity Per Capita"},title = "World Footprint & Biocapacity Trends"))
+       st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapTotGHA','EFConsTotGHA']],labels={"value": "Ecological Footprint & Biocapacity GHA"},title = "World Footprint & Biocapacity Trends"))
        st.plotly_chart(px.line(df_world[df_world['record']=='EFConsTotGHA'], x="year",
                y=["carbon", "crop_land", "grazing_land", "fishing_ground", "forest_land", "built_up_land"], \
                title='Evolution of the total Consumption per land type as well as Carbon Emission for the world',
