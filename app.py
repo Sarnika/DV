@@ -2,12 +2,11 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.write("""
-Ecological Footprint Data
-""")
+st.title("Ecological Footprint per Capita Dataset visualization")
+
 df = pd.read_csv('NFA.csv')
-option = st.sidebar.selectbox( label =  'Visualizations',options = ('World', 'Year and Region'))
-if option == 'Year and Region':
+option = st.sidebar.selectbox( label =  'Visualizations',options = ('World', 'Year and Record'))
+if option == 'Year and Record':
        min_year = 1961
        max_year = 2014
        year = st.sidebar.slider('Year',min_value = min_year, max_value = max_year,step=1)
@@ -28,25 +27,35 @@ if option == 'Year and Region':
 
        df_land.set_index('country',inplace=True)
 
-
+       st.write(record +'Top 10 countries by total area land distribution and carbon emission for year '+ str(year))
        st.bar_chart(df_land.head(10))
+       st.write(record + 'Bottom 10 countries by total area land distribution and carbon emission for year' + str(year))
        st.bar_chart(df_land.tail(10))# download countries geojson file
 
        st.plotly_chart(px.choropleth(df_pop, locations="ISO alpha-3 code",
                            color="population", # lifeExp is a column of gapminder
                            hover_name="country", # column to add to hover information
-                           color_continuous_scale=px.colors.sequential.Cividis_r))
-       st.plotly_chart(px.choropleth(df_non_world,locations="ISO alpha-3 code",hover_name="country",color="total",height=500))
+                           color_continuous_scale=px.colors.sequential.Cividis_r,
+                           title = "Countrywise Population in the year "+str(year)))
+       st.plotly_chart(px.choropleth(df_non_world,locations="ISO alpha-3 code",hover_name="country",color="total",height=500,title=record +" for countries during the year  "+str(year)))
 
 
 
        st.plotly_chart(px.scatter(df_non_world, x="population", y="Percapita GDP (2010 USD)",
                     size="population", color="UN_region",
-                        hover_name="country", log_x=True, size_max=60))
+                        hover_name="country", log_x=True, size_max=60,  title = "Population vs Percapita GDP in year "+str(year)))
 
        st.plotly_chart(px.scatter(df_non_world,y="total",x="Percapita GDP (2010 USD)",hover_name="country",height=500,color="UN_region",\
-                  size="population",size_max=60,log_x=True))
+                  size="population",size_max=60,log_x=True,title = "Total land vs Percapita GDP in year "+str(year)))
+
 elif option == 'World':
        df_world = df[(df['country']=='World')]
        st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapPerCap','EFConsPerCap']]))
-       st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapPerCap','EFConsPerCap']]))
+       st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapTotGHA','EFConsTotGHA']]))
+       st.plotly_chart(px.line(df_world[df_world['record']=='EFConsTotGHA'], x="year",
+               y=["carbon", "crop_land", "grazing_land", "fishing_ground", "forest_land", "built_up_land"], \
+               title='Evolution of the total Consumption per land type as well as Carbon Emission for the world',
+               labels={"value": "Total EF Consumption (GHA)"}))
+       st.plotly_chart(px.line(df_world[df_world['record']=='EFConsPerCap'], x="year", y=["carbon"], \
+               title='Evolution of the carbon emission per capita for the world',
+               labels={"value": "Carbon emission per capita (GHA)"}))
