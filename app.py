@@ -14,6 +14,7 @@ if option == 'Year and Record':
        col1, col2= st.columns(2)
        col1.metric(label="Year", value=year)
        col2.metric(label="Record", value=record)
+
        df_year_record = df[(df['year']==year) & (df['record']==record)]
 
        df_pop = df_year_record[['country','population','ISO alpha-3 code']]
@@ -50,6 +51,7 @@ if option == 'Year and Record':
 
 elif option == 'World':
        df_world = df[(df['country']=='World')]
+       df_non_world = df[df['country'] != 'World']
        st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapPerCap','EFConsPerCap']]))
        st.plotly_chart(px.line(pd.pivot_table(df_world,values = 'total',index=['year'],columns=['record'],aggfunc='sum')[['BiocapTotGHA','EFConsTotGHA']]))
        st.plotly_chart(px.line(df_world[df_world['record']=='EFConsTotGHA'], x="year",
@@ -59,3 +61,28 @@ elif option == 'World':
        st.plotly_chart(px.line(df_world[df_world['record']=='EFConsPerCap'], x="year", y=["carbon"], \
                title='Evolution of the carbon emission per capita for the world',
                labels={"value": "Carbon emission per capita (GHA)"}))
+
+       pt1 = (pd.pivot_table(df_non_world,values = 'total',index=['UN_region', 'year'],columns=['record'],aggfunc='sum')\
+              [['BiocapTotGHA','EFConsTotGHA']].reset_index().set_index('UN_region'))
+       pt2 = \
+       pd.pivot_table(df_non_world, values='population', index=['UN_region', 'year'], columns=['record'], aggfunc='sum') \
+           [['BiocapTotGHA']].rename(index=str, columns={'BiocapTotGHA': 'population'}).reset_index().drop(['year'],
+                                                                                                           axis=1) \
+           .set_index('UN_region')
+       result_pt = pd.concat([pt1, pt2], axis=1)
+       result_pt['BiocapPerCap_region'] = result_pt['BiocapTotGHA'] / result_pt['population']
+       result_pt['EFConsPerCap_region'] = result_pt['EFConsTotGHA'] / result_pt['population']
+       regional = result_pt.reset_index()
+       reserve_deficit = regional.groupby(['UN_region', 'year'])[
+           ['BiocapPerCap_region', 'EFConsPerCap_region']].sum().reset_index()
+       min_year = 1961
+       max_year = 2014
+       year = st.slider('Year', min_value=min_year, max_value=max_year, step=1)
+       reserve_deficit_year = reserve_deficit[reserve_deficit['year'] == year]
+       reserve_deficit_year['reserve_or_deficit'] = reserve_deficit_year['BiocapPerCap_region'] - reserve_deficit_year[
+           'EFConsPerCap_region']
+       final = reserve_deficit_year.reset_index()
+       st.plotly_chart(px.bar(final, x="reserve_or_deficit", y="UN_region", orientation='h', color='reserve_or_deficit'
+              , title='Regional Biocapacity Reserve(+) or Deficit(-)'
+              , labels={"UN_region": "World's Regions",
+                        "reserve_or_deficit": "Biocapacity Reserve or Deficit Per Capita - "+str(year)}))
